@@ -6,40 +6,68 @@ import android.support.v4.app.Fragment
 import android.support.v7.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
 import android.support.annotation.NonNull
+import android.support.v4.app.FragmentManager
+import android.support.v4.app.FragmentPagerAdapter
 import android.view.MenuItem
+import android.support.v4.view.ViewPager
+import android.util.Log
+import java.util.ArrayList
 
 
 class MainActivity : AppCompatActivity() {
 
     private val mOnNavigationItemSelectedListener =
         BottomNavigationView.OnNavigationItemSelectedListener { item ->
-        lateinit var fragment : Fragment
 
         when (item.itemId) {
-            R.id.navigation_home -> fragment = HomeFragment()
-            R.id.navigation_dashboard -> fragment = DashboardFragment()
-            R.id.navigation_notifications -> fragment = NotificationsFragment()
+            R.id.navigation_home -> viewpager.currentItem = 0
+            R.id.navigation_dashboard -> viewpager.currentItem = 1
+            R.id.navigation_notifications -> viewpager.currentItem = 2
         }
-        loadFragment(fragment)
+        false
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        loadFragment(HomeFragment())
-
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener)
+
+        setupViewPager()
     }
 
-    private fun loadFragment(fragment: Fragment?): Boolean {
-        if (fragment != null) {
-            supportFragmentManager
-                .beginTransaction()
-                .replace(R.id.fragment_container, fragment)
-                .commit()
-            return true
+    private fun setupViewPager() {
+
+        val adapter = ViewPagerAdapter(supportFragmentManager)
+
+        adapter.addFragment(HomeFragment(), "home")
+        adapter.addFragment(DashboardFragment(), "Dashboard")
+        adapter.addFragment(NotificationsFragment(), "Notifications")
+
+        viewpager.adapter = adapter
+
+    }
+
+    internal inner class ViewPagerAdapter(fragmentManager: FragmentManager) :
+        FragmentPagerAdapter(fragmentManager) {
+        private val fragmentList = ArrayList<Fragment>()
+        private val titleFragmentList = ArrayList<String>()
+
+        override fun getItem(i: Int): Fragment {
+            return fragmentList[i]
         }
-        return false
+
+        override fun getCount(): Int {
+            return fragmentList.size
+        }
+
+        fun addFragment(fragment: Fragment, title: String) {
+            fragmentList.add(fragment)
+            titleFragmentList.add(title)
+        }
+
+        override fun getPageTitle(position: Int): CharSequence? {
+            return titleFragmentList[position]
+        }
     }
 }
